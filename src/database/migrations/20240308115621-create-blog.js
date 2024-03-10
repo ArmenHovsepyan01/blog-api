@@ -19,7 +19,7 @@ module.exports = {
         allowNull: false
       },
       imageUrl: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: true
       },
       isPublished: {

@@ -2,7 +2,7 @@
 import Sequelize, { Model, Optional } from 'sequelize';
 import db from './index';
 
-interface BlogAttributes {
+export interface BlogAttributes {
   id?: number;
   title: string;
   content: string;

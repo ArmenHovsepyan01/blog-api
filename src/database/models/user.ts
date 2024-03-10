@@ -1,6 +1,6 @@
 import Sequelize, { Model, Optional } from 'sequelize';
 import db from './index';
-interface UserAttributes {
+export interface UserAttributes {
   id?: number;
   firstName: string;
   lastName: string;
@@ -10,26 +10,29 @@ interface UserAttributes {
   updatedAt?: Date;
 }
 
-export interface UserInput extends Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+interface UserInput extends Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
   class User extends Model<UserAttributes, UserInput> implements UserAttributes {
-    id!: number;
+    id?: number;
     firstName: string;
     lastName: string;
     email: string;
     password: string;
 
-    readonly createdAt!: Date;
-    readonly updatedAt!: Date;
+    readonly createdAt?: Date;
+    readonly updatedAt?: Date;
+
     static associate(models: typeof db) {
       this.hasMany(models.Blog, {
         as: 'blogs',
+        foreignKey: 'userId',
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       });
       this.hasMany(models.LikedBlogs, {
-        foreignKey: 'userId'
+        foreignKey: 'userId',
+        as: 'likedBlogs'
       });
     }
   }

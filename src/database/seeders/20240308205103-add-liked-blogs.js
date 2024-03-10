@@ -1,23 +1,26 @@
 'use strict';
 
 const { Op } = require('sequelize');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.bulkInsert('Users', [
+    await queryInterface.bulkInsert('LikedBlogs', [
       {
-        firstName: 'Armen',
-        lastName: 'Hovsepyan',
-        email: 'arh20025@gmail.com',
-        password: '121212',
+        userId: 1,
+        blogId: 1,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
-        firstName: 'Jhon',
-        lastName: 'Smith',
-        email: 'jhon@gmail.com',
-        password: 'huhu12',
+        userId: 1,
+        blogId: 2,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        userId: 2,
+        blogId: 1,
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -25,7 +28,7 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Users', {
+    await queryInterface.bulkDelete('LikedBlogs', {
       where: {
         id: {
           [Op.gt]: 0
