@@ -1,11 +1,13 @@
 import Sequelize, { Model, Optional } from 'sequelize';
 import db from './index';
+
 export interface UserAttributes {
   id?: number;
   firstName: string;
   lastName: string;
   email: string;
   password: string;
+  isVerified: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,6 +21,7 @@ export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
     lastName: string;
     email: string;
     password: string;
+    isVerified: boolean;
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;
@@ -61,6 +64,10 @@ export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
       password: {
         type: DataTypes.STRING,
         allowNull: false
+      },
+      isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
       },
       createdAt: {
         allowNull: false,
