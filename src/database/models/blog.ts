@@ -1,6 +1,7 @@
 'use strict';
-import Sequelize, { Model, Optional } from 'sequelize';
+import Sequelize, { InstanceDestroyOptions, Model, Optional } from 'sequelize';
 import db from './index';
+import deleteImage from '../../utilis/deleteImage';
 
 export interface BlogAttributes {
   id?: number;
@@ -80,7 +81,15 @@ export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'Blog'
+      modelName: 'Blog',
+      hooks: {
+        async beforeDestroy(instance, options: InstanceDestroyOptions) {
+          if (instance.imageUrl) {
+            await deleteImage(instance.imageUrl);
+            console.log('Image deleted successfully.');
+          }
+        }
+      }
     }
   );
   return Blog;

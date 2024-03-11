@@ -9,7 +9,7 @@ import { loginBodyValidator } from '../validators/loginBodyValidator';
 import { changePasswordValidator } from '../validators/changePasswordValidator';
 import { resetPasswordValidator } from '../validators/resetPasswordValidator';
 
-import { checkUser } from '../middleware/checkUser';
+import { checkUserPrivilegies } from '../middleware/checkUserPrivilegies';
 
 const router = Router();
 
@@ -21,6 +21,6 @@ router
   .post(validate(resetPasswordValidator), userController.requestToChangePassword);
 router
   .route('/change-password')
-  .post(checkUser, validate(changePasswordValidator), userController.changePassword);
+  .post(checkUserPrivilegies, validate(changePasswordValidator), userController.changePassword);
 
 export default router;

@@ -1,26 +1,25 @@
 import { NextFunction, Request, Response } from 'express';
-
 import jwt from 'jsonwebtoken';
 
 export async function checkUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const { token } = req.query;
-    console.log(token);
-    if (!token) {
-      return res.status(401).json({
-        message: 'Missing token.'
+    if (!req.headers.authorization) {
+      return res.status(400).json({
+        message: 'Missing authorization headers.'
       });
     }
 
-    const userInfo = await jwt.verify(token as string, process.env.SECRETKEY);
-    // @ts-ignore
+    const token = req.headers.authorization.trim().split(' ')[1];
 
-    req.body.id = userInfo.id;
+    const userInfo = jwt.verify(token, process.env.SECRETKEY);
+
+    // @ts-ignore
+    req.body.user_id = userInfo.id;
 
     next();
   } catch (e) {
     res.status(401).json({
-      message: e.message
+      message: 'Unauthorized user access denied.'
     });
   }
 }
