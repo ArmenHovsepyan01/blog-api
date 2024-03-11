@@ -27,7 +27,10 @@ async function verify(req: Request, res: Response) {
     const { code } = req.body;
     await userServices.verify(code);
 
-    res.status(301).redirect('http://localhost//3000//login');
+    res.status(200).json({
+      message: 'User passed verification successfully.',
+      route: '/login'
+    });
   } catch (e) {
     res.status(500).json({
       message: e.message
@@ -71,7 +74,6 @@ async function requestToChangePassword(req: Request, res: Response) {
 async function changePassword(req: Request, res: Response) {
   try {
     const { id, password } = req.body;
-    console.log(password);
 
     const message = await userServices.changePassword(id, password);
 

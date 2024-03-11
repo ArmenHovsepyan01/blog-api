@@ -1,11 +1,12 @@
 import express from 'express';
 
+import path from 'path';
+
 import cors from 'cors';
 
 import router from './routes/router';
 
 import { connectToDB } from './database/config/database';
-import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 5005;
@@ -22,6 +23,7 @@ app.use('/api/images', express.static(imagesPath));
 const start = async () => {
   try {
     await connectToDB();
+
     app.listen(PORT, () => console.log(`Server is listening on port: ${PORT}`));
   } catch (e: any) {
     throw new Error(e);

@@ -11,6 +11,7 @@ import { LoginValues } from '../definitions';
 import jwt from 'jsonwebtoken';
 
 import db from '../database/models';
+import { addAbortSignal } from 'node:stream';
 
 async function login(values: LoginValues) {
   try {
@@ -53,26 +54,31 @@ async function register(values: UserAttributes) {
   try {
     const { email } = values;
 
-    const exitedUser = await User.findOne({
+    const existedUser = await User.findOne({
       where: {
         email
       }
     });
 
-    if (exitedUser && exitedUser.isVerified)
+    if (existedUser && existedUser.isVerified)
       throw new Error('You already have registered by this email please log in.');
 
-    if (exitedUser && !exitedUser.isVerified)
-      throw new Error('You already have registered by this email please pass verification.');
+    values.password = await bcrypt.hash(values.password, 7);
 
-    const hashedPassword = await bcrypt.hash(values.password, 7);
+    if (existedUser && !existedUser.isVerified) {
+      await User.update(values, {
+        where: {
+          email
+        }
+      });
 
-    const newUser = await User.create({
-      ...values,
-      password: hashedPassword
-    });
+      return await sendVerificationCode(email, existedUser.dataValues.id, values.firstName);
+    }
 
-    return await sendVerificationCode(email, newUser.dataValues.id, values.firstName);
+    if (!existedUser) {
+      const newUser = await User.create(values);
+      return await sendVerificationCode(email, newUser.dataValues.id, values.firstName);
+    }
   } catch (e) {
     console.error(e);
     throw new Error(e);

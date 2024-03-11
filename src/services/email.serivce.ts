@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
+
 import * as crypto from 'crypto';
+
 import { VerificationCodes } from '../database/models/models';
 
 const transporter = nodemailer.createTransport({
@@ -19,9 +21,9 @@ export const sendVerificationCode = async (email: string, user_id: number, user_
 
     const html = `<div xmlns="http://www.w3.org/1999/html">
     <h3>Hey ${user_name}!</h3>
-    <span>Verification code: <strong>${verificationCode}</strong></span> </br>
-    <span>Please go to <a href="http://localhost/3000/verify">Verification page</a> 
-    and pass verification by this code.</span>
+    <span>Verification code: <strong>${verificationCode}</strong></span> 
+    <p>Please go to <a href="http://localhost:3000/verify">Verification page</a> 
+    and pass verification by this code.</p>
 </div>`;
 
     const mailOptions = {
