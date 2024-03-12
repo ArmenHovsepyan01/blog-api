@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+
 import jwt from 'jsonwebtoken';
 
 export async function checkUser(req: Request, res: Response, next: NextFunction) {
@@ -14,7 +15,7 @@ export async function checkUser(req: Request, res: Response, next: NextFunction)
     const userInfo = jwt.verify(token, process.env.SECRETKEY);
 
     // @ts-ignore
-    req.body.user_id = userInfo.id;
+    req.body.userId = userInfo.user_id;
 
     next();
   } catch (e) {

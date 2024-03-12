@@ -26,6 +26,13 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
+      isVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      resetPasswordCode: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

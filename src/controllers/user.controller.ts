@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import userServices from '../services/user.services';
 
@@ -24,13 +24,12 @@ async function register(req: Request, res: Response) {
 
 async function verify(req: Request, res: Response) {
   try {
-    const { code } = req.body;
-    await userServices.verify(code);
+    const { token } = req.query;
+    // @ts-ignore
 
-    res.status(200).json({
-      message: 'User passed verification successfully.',
-      route: '/login'
-    });
+    await userServices.verify(token);
+
+    res.status(301).redirect('http://localhost:3000/login');
   } catch (e) {
     res.status(500).json({
       message: e.message
@@ -38,7 +37,7 @@ async function verify(req: Request, res: Response) {
   }
 }
 
-async function login(req: Request, res: Response) {
+async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const userCredentials = req.body as LoginValues;
 
@@ -49,9 +48,7 @@ async function login(req: Request, res: Response) {
       data
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 
@@ -73,9 +70,10 @@ async function requestToChangePassword(req: Request, res: Response) {
 
 async function changePassword(req: Request, res: Response) {
   try {
-    const { id, password } = req.body;
+    const { userId, password } = req.body;
+    const { code } = req.query;
 
-    const message = await userServices.changePassword(id, password);
+    const message = await userServices.changePassword(userId, password, code);
 
     res.status(200).json({
       message

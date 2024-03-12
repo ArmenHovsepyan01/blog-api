@@ -8,11 +8,13 @@ export interface UserAttributes {
   email: string;
   password: string;
   isVerified: boolean;
+  resetPasswordCode?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-interface UserInput extends Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+interface UserInput
+  extends Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt' | 'resetPasswordCode'> {}
 
 export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
   class User extends Model<UserAttributes, UserInput> implements UserAttributes {
@@ -22,6 +24,7 @@ export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
     email: string;
     password: string;
     isVerified: boolean;
+    resetPasswordCode?: string;
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;
@@ -68,6 +71,9 @@ export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
       isVerified: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+      },
+      resetPasswordCode: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

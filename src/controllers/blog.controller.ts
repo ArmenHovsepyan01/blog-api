@@ -36,8 +36,9 @@ async function create(req: Request, res: Response) {
 async function deleteBlog(req: Request, res: Response) {
   try {
     const { id } = req.params;
+    const { userId } = req.body;
 
-    const message = await blogServices.deleteBlog(+id);
+    const message = await blogServices.deleteBlog(+id, userId);
 
     res.status(200).json({
       message
@@ -68,6 +69,7 @@ async function update(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const updatedBlogValues = req.body as BlogAttributes;
+    console.log(updatedBlogValues);
 
     const updatedBlog = await blogServices.updateBlog(+id, updatedBlogValues);
 

@@ -7,16 +7,20 @@ import cors from 'cors';
 import router from './routes/router';
 
 import { connectToDB } from './database/config/database';
+import bodyParser from 'body-parser';
+import { errorResponder } from './error/customError';
 
 const app = express();
 const PORT = process.env.PORT || 5005;
 const imagesPath = path.resolve('public/images');
 
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use(router);
+
+app.use(errorResponder);
 
 app.use('/api/images', express.static(imagesPath));
 

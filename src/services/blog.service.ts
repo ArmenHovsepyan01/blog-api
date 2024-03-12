@@ -3,7 +3,11 @@ import { Blog } from '../database/models/models';
 
 async function getBlog(id: number) {
   try {
-    return await Blog.findByPk(id);
+    const blog = await Blog.findByPk(id);
+
+    if (!blog) return {};
+
+    return blog;
   } catch (e) {
     throw new Error(e);
   }
@@ -11,13 +15,16 @@ async function getBlog(id: number) {
 
 async function getAllBlogs() {
   try {
-    return Blog.findAll();
+    return Blog.findAll({
+      where: {
+        isPublished: true
+      }
+    });
   } catch (e) {
     throw new Error(e);
   }
 }
 
-// protect with middlware
 async function createBlog(values: BlogAttributes) {
   try {
     const newBlog = await Blog.create(values);
@@ -30,31 +37,46 @@ async function createBlog(values: BlogAttributes) {
   }
 }
 
-async function deleteBlog(id: number) {
+async function deleteBlog(id: number, userId: number) {
   try {
-    const deletedBlog = await Blog.destroy({
+    const blog = await Blog.findByPk(id);
+
+    if (!blog) throw new Error("Blog doesn't exist.");
+
+    if (blog.dataValues.userId !== userId) throw new Error('User access denied.');
+
+    await Blog.destroy({
       where: {
         id
       }
     });
 
-    console.log(deletedBlog);
     return 'Blog deleted successfully.';
   } catch (e) {
     throw new Error(e);
   }
 }
 
-// protect with middlware
 async function updateBlog(id: number, values: BlogAttributes) {
   try {
     if (!values) return 'Values are empty there is nothing to update.';
 
-    return await Blog.update(values, {
+    const blog = await Blog.findByPk(id);
+
+    if (!blog) throw new Error("Blog doesn't exist.");
+
+    if (blog.dataValues.userId !== values.userId) throw new Error('User access denied.');
+
+    await Blog.update(values, {
       where: {
         id
       }
     });
+
+    return {
+      ...blog.dataValues,
+      ...values
+    };
   } catch (e) {
     throw new Error(e);
   }

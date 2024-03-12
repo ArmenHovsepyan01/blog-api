@@ -1,8 +1,6 @@
 import nodemailer from 'nodemailer';
 
-import * as crypto from 'crypto';
-
-import { VerificationCodes } from '../database/models/models';
+import jwt from 'jsonwebtoken';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -17,13 +15,24 @@ const transporter = nodemailer.createTransport({
 
 export const sendVerificationCode = async (email: string, user_id: number, user_name: string) => {
   try {
-    const verificationCode = crypto.randomBytes(6).toString('hex');
+    const token = jwt.sign(
+      {
+        email,
+        userId: user_id
+      },
+      process.env.SECRETKEY,
+      {
+        expiresIn: '1h'
+      }
+    );
 
     const html = `<div xmlns="http://www.w3.org/1999/html">
     <h3>Hey ${user_name}!</h3>
-    <span>Verification code: <strong>${verificationCode}</strong></span> 
-    <p>Please go to <a href="http://localhost:3000/verify">Verification page</a> 
-    and pass verification by this code.</p>
+    <p>Please press this button to verify your account <a href="http://localhost:${process.env.PORT}/verify?token=${token}" style="text-decoration: none;color: black">
+    <br>
+    <button>Verify Account</button>
+</a> 
+</p>
 </div>`;
 
     const mailOptions = {
@@ -34,10 +43,6 @@ export const sendVerificationCode = async (email: string, user_id: number, user_
     };
 
     await transporter.sendMail(mailOptions);
-
-    await VerificationCodes.create({ user_id, code: verificationCode });
-
-    return verificationCode;
   } catch (e) {
     console.error(e);
     throw new Error('Failed to send verification mail.');

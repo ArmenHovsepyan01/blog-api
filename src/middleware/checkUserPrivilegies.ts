@@ -1,18 +1,20 @@
 import { NextFunction, Request, Response } from 'express';
 
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 export async function checkUserPrivilegies(req: Request, res: Response, next: NextFunction) {
   try {
-    const { token } = req.query;
-    console.log(token);
-    if (!token) {
+    const { code } = req.query;
+    if (!code) {
       return res.status(401).json({
-        message: 'Missing token.'
+        message: 'User access denied.'
       });
     }
 
-    const userInfo = await jwt.verify(token as string, process.env.SECRETKEY);
+    // const codeIsValid = await bcrypt.compare(code, )
+
+    // console.log(userInfo);
     // @ts-ignore
 
     req.body.id = userInfo.id;

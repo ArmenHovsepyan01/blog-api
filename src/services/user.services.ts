@@ -1,6 +1,6 @@
 import { UserAttributes } from '../database/models/user';
 
-import { Blog, LikedBlogs, User, VerificationCodes } from '../database/models/models';
+import { User } from '../database/models/models';
 
 import bcrypt from 'bcrypt';
 
@@ -10,8 +10,8 @@ import { LoginValues } from '../definitions';
 
 import jwt from 'jsonwebtoken';
 
-import db from '../database/models';
-import { addAbortSignal } from 'node:stream';
+import crypto from 'node:crypto';
+import { CustomError } from '../error/customError';
 
 async function login(values: LoginValues) {
   try {
@@ -21,7 +21,11 @@ async function login(values: LoginValues) {
       }
     });
 
-    if (!user) throw new Error('There is no account with this email please register then log in.');
+    if (!user)
+      throw new CustomError(
+        401,
+        'There is no account with this email please register then log in.'
+      );
 
     if (!user.dataValues.isVerified) throw new Error('Please pass verification then log in. ');
 
@@ -85,21 +89,22 @@ async function register(values: UserAttributes) {
   }
 }
 
-async function verify(code: string) {
+interface UserPayload {
+  userId: number;
+  email: string;
+}
+
+async function verify(token: string) {
   try {
-    const userVerificationInfo = await VerificationCodes.findOne({
-      where: {
-        code
-      }
-    });
+    const userInfo = jwt.verify(token, process.env.SECRETKEY) as UserPayload;
 
-    if (!userVerificationInfo)
-      throw new Error('The code is not exist please pass registration to get verification code.');
+    const user = await User.findByPk(userInfo.userId);
 
-    if (userVerificationInfo.dataValues.code !== code)
-      throw new Error('The code is wrong please write right one or pass registration once more.');
+    if (!user) throw new Error('Verification failed.');
 
-    const t = await db.sequelize.transaction();
+    if (user.dataValues.email !== userInfo.email) throw new Error('Verification failed.');
+
+    if (user.isVerified) throw new Error("Your account is verificated you u can't pass it again.");
 
     await User.update(
       {
@@ -107,20 +112,10 @@ async function verify(code: string) {
       },
       {
         where: {
-          id: userVerificationInfo.dataValues.user_id
-        },
-        transaction: t
+          id: user.id
+        }
       }
     );
-
-    await VerificationCodes.destroy({
-      where: {
-        id: userVerificationInfo.dataValues.id
-      },
-      transaction: t
-    });
-
-    await t.commit();
   } catch (e) {
     throw new Error(e);
   }
@@ -139,18 +134,21 @@ async function requestToChangePassword(email: string) {
     if (!user.dataValues.isVerified)
       throw new Error("Unverified users can't reset password please pass verification.");
 
-    const token = jwt.sign(
+    const code = crypto.randomBytes(16).toString('hex');
+    const hashedCode = await bcrypt.hash(code, 9);
+
+    await User.update(
       {
-        id: user.id,
-        email
+        resetPasswordCode: hashedCode
       },
-      process.env.SECRETKEY,
       {
-        expiresIn: '3m'
+        where: {
+          email
+        }
       }
     );
 
-    const link = `http://localhost:3000/change-password?token=${token}`;
+    const link = `http://localhost:3000/change-password?code=${code}`;
 
     await sendPasswordResetMail(user.dataValues.email, user.dataValues.firstName, link);
 
@@ -160,16 +158,23 @@ async function requestToChangePassword(email: string) {
   }
 }
 
-async function changePassword(id: number, password: string) {
+async function changePassword(id: number, password: string, code: any) {
   try {
+    const user = await User.findByPk(id);
+
+    if (!user) throw new Error('Access denied.');
+
+    if (!(await bcrypt.compare(code, user.dataValues.resetPasswordCode)))
+      throw new Error('Reset password failed');
+
     if (!password) throw new Error('Password is empty please fill it');
 
     const hashedPassword = await bcrypt.hash(password, 7);
-    console.log(hashedPassword);
 
     await User.update(
       {
-        password: hashedPassword
+        password: hashedPassword,
+        resetPasswordCode: null
       },
       {
         where: {
@@ -184,33 +189,12 @@ async function changePassword(id: number, password: string) {
   }
 }
 
-async function getUser(id: number) {
-  try {
-    return await User.findByPk(id, {
-      attributes: ['id', 'firstName', 'lastName', 'email'],
-      include: [
-        {
-          model: Blog,
-          as: 'blogs'
-        },
-        {
-          model: LikedBlogs,
-          as: 'likedBlogs'
-        }
-      ]
-    });
-  } catch (e) {
-    throw new Error(e);
-  }
-}
-
 const userServices = {
   login,
   register,
   verify,
   changePassword,
-  requestToChangePassword,
-  getUser
+  requestToChangePassword
 };
 
 export default userServices;

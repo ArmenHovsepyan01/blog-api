@@ -10,17 +10,18 @@ import { changePasswordValidator } from '../validators/changePasswordValidator';
 import { resetPasswordValidator } from '../validators/resetPasswordValidator';
 
 import { checkUserPrivilegies } from '../middleware/checkUserPrivilegies';
+import { checkUser } from '../middleware/checkUser';
 
 const router = Router();
 
 router.route('/register').post(validate(registerBodyValidator), userController.register);
-router.route('/verify').post(userController.verify);
+router.route('/verify').get(userController.verify);
 router.route('/login').post(validate(loginBodyValidator), userController.login);
 router
   .route('/reset-password')
   .post(validate(resetPasswordValidator), userController.requestToChangePassword);
 router
   .route('/change-password')
-  .post(checkUserPrivilegies, validate(changePasswordValidator), userController.changePassword);
+  .post(checkUser, validate(changePasswordValidator), userController.changePassword);
 
 export default router;
