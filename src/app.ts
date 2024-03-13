@@ -8,7 +8,9 @@ import router from './routes/router';
 
 import { connectToDB } from './database/config/database';
 import bodyParser from 'body-parser';
-import { errorResponder } from './error/customError';
+
+import { errorHandler } from './errors/customError';
+import 'express-async-errors';
 
 const app = express();
 const PORT = process.env.PORT || 5005;
@@ -20,7 +22,7 @@ app.use(express.json());
 
 app.use(router);
 
-app.use(errorResponder);
+app.use(errorHandler);
 
 app.use('/api/images', express.static(imagesPath));
 

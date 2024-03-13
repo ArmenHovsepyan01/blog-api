@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import { BlogAttributes } from '../database/models/blog';
 
 import blogServices from '../services/blog.service';
-async function getAll(req: Request, res: Response) {
+
+async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
     const blogs = await blogServices.getAllBlogs();
 
@@ -11,13 +12,11 @@ async function getAll(req: Request, res: Response) {
       blogs
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 
-async function create(req: Request, res: Response) {
+async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const blogValues = req.body as BlogAttributes;
 
@@ -27,13 +26,11 @@ async function create(req: Request, res: Response) {
       blog: newBlog
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 
-async function deleteBlog(req: Request, res: Response) {
+async function deleteBlog(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
     const { userId } = req.body;
@@ -44,13 +41,11 @@ async function deleteBlog(req: Request, res: Response) {
       message
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 
-async function get(req: Request, res: Response) {
+async function get(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
     const blog = await blogServices.getBlog(+id);
@@ -59,13 +54,11 @@ async function get(req: Request, res: Response) {
       blog
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 
-async function update(req: Request, res: Response) {
+async function update(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
     const updatedBlogValues = req.body as BlogAttributes;
@@ -78,9 +71,7 @@ async function update(req: Request, res: Response) {
       blog: updatedBlog
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 

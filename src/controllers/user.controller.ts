@@ -6,7 +6,7 @@ import { UserAttributes } from '../database/models/user';
 
 import { LoginValues } from '../definitions';
 
-async function register(req: Request, res: Response) {
+async function register(req: Request, res: Response, next: NextFunction) {
   try {
     const userCredentials = req.body as UserAttributes;
 
@@ -16,13 +16,11 @@ async function register(req: Request, res: Response) {
       message: 'User registered successfully.'
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 
-async function verify(req: Request, res: Response) {
+async function verify(req: Request, res: Response, next: NextFunction) {
   try {
     const { token } = req.query;
     // @ts-ignore
@@ -31,9 +29,7 @@ async function verify(req: Request, res: Response) {
 
     res.status(301).redirect('http://localhost:3000/login');
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 
@@ -52,7 +48,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-async function requestToChangePassword(req: Request, res: Response) {
+async function requestToChangePassword(req: Request, res: Response, next: NextFunction) {
   try {
     const { email } = req.body;
 
@@ -62,13 +58,11 @@ async function requestToChangePassword(req: Request, res: Response) {
       message
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 
-async function changePassword(req: Request, res: Response) {
+async function changePassword(req: Request, res: Response, next: NextFunction) {
   try {
     const { userId, password } = req.body;
     const { code } = req.query;
@@ -79,9 +73,7 @@ async function changePassword(req: Request, res: Response) {
       message
     });
   } catch (e) {
-    res.status(500).json({
-      message: e.message
-    });
+    next(e);
   }
 }
 

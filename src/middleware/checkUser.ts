@@ -20,7 +20,9 @@ export async function checkUser(req: Request, res: Response, next: NextFunction)
     next();
   } catch (e) {
     res.status(401).json({
-      message: 'Unauthorized user access denied.'
+      error: {
+        message: 'Unauthorized user access denied.'
+      }
     });
   }
 }

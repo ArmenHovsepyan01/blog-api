@@ -1,5 +1,6 @@
 import { BlogAttributes } from '../database/models/blog';
 import { Blog } from '../database/models/models';
+import { CustomError } from '../errors/customError';
 
 async function getBlog(id: number) {
   try {
@@ -9,7 +10,7 @@ async function getBlog(id: number) {
 
     return blog;
   } catch (e) {
-    throw new Error(e);
+    throw e;
   }
 }
 
@@ -21,7 +22,7 @@ async function getAllBlogs() {
       }
     });
   } catch (e) {
-    throw new Error(e);
+    throw e;
   }
 }
 
@@ -33,7 +34,7 @@ async function createBlog(values: BlogAttributes) {
 
     return newBlog;
   } catch (e) {
-    throw new Error(e);
+    throw e;
   }
 }
 
@@ -41,9 +42,9 @@ async function deleteBlog(id: number, userId: number) {
   try {
     const blog = await Blog.findByPk(id);
 
-    if (!blog) throw new Error("Blog doesn't exist.");
+    if (!blog) throw new CustomError("Blog doesn't exist.", 404);
 
-    if (blog.dataValues.userId !== userId) throw new Error('User access denied.');
+    if (blog.dataValues.userId !== userId) throw new CustomError('User access denied.', 401);
 
     await Blog.destroy({
       where: {
@@ -53,19 +54,19 @@ async function deleteBlog(id: number, userId: number) {
 
     return 'Blog deleted successfully.';
   } catch (e) {
-    throw new Error(e);
+    throw e;
   }
 }
 
 async function updateBlog(id: number, values: BlogAttributes) {
   try {
-    if (!values) return 'Values are empty there is nothing to update.';
+    if (!values) throw new CustomError('Values are empty there is nothing to update.', 400);
 
     const blog = await Blog.findByPk(id);
 
-    if (!blog) throw new Error("Blog doesn't exist.");
+    if (!blog) throw new CustomError("Blog doesn't exist.", 404);
 
-    if (blog.dataValues.userId !== values.userId) throw new Error('User access denied.');
+    if (blog.dataValues.userId !== values.userId) throw new CustomError('User access denied.', 401);
 
     await Blog.update(values, {
       where: {
@@ -78,7 +79,7 @@ async function updateBlog(id: number, values: BlogAttributes) {
       ...values
     };
   } catch (e) {
-    throw new Error(e);
+    throw e;
   }
 }
 

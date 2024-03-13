@@ -11,7 +11,7 @@ import { LoginValues } from '../definitions';
 import jwt from 'jsonwebtoken';
 
 import crypto from 'node:crypto';
-import { CustomError } from '../error/customError';
+import { CustomError } from '../errors/customError';
 
 async function login(values: LoginValues) {
   try {
@@ -21,16 +21,18 @@ async function login(values: LoginValues) {
       }
     });
 
-    if (!user)
+    if (!user) {
       throw new CustomError(
-        401,
-        'There is no account with this email please register then log in.'
+        'There is no account with this email please register then log in.',
+        401
       );
+    }
 
-    if (!user.dataValues.isVerified) throw new Error('Please pass verification then log in. ');
+    if (!user.dataValues.isVerified)
+      throw new CustomError('Please pass verification then log in.', 401);
 
     if (!(await bcrypt.compare(values.password, user.password))) {
-      throw new Error('Password is wrong please try again.');
+      throw new CustomError('Password is wrong please try again.', 401);
     }
 
     const access_token = jwt.sign(
@@ -50,7 +52,7 @@ async function login(values: LoginValues) {
       access_token
     };
   } catch (e: any) {
-    throw new Error(e);
+    throw e;
   }
 }
 
@@ -65,7 +67,7 @@ async function register(values: UserAttributes) {
     });
 
     if (existedUser && existedUser.isVerified)
-      throw new Error('You already have registered by this email please log in.');
+      throw new CustomError('You already have registered by this email please log in.', 409);
 
     values.password = await bcrypt.hash(values.password, 7);
 
@@ -84,8 +86,7 @@ async function register(values: UserAttributes) {
       return await sendVerificationCode(email, newUser.dataValues.id, values.firstName);
     }
   } catch (e) {
-    console.error(e);
-    throw new Error(e);
+    throw e;
   }
 }
 
@@ -100,11 +101,12 @@ async function verify(token: string) {
 
     const user = await User.findByPk(userInfo.userId);
 
-    if (!user) throw new Error('Verification failed.');
+    if (!user) throw new CustomError('Verification failed.', 401);
 
-    if (user.dataValues.email !== userInfo.email) throw new Error('Verification failed.');
+    if (user.dataValues.email !== userInfo.email) throw new CustomError('Email mismatch.', 403);
 
-    if (user.isVerified) throw new Error("Your account is verificated you u can't pass it again.");
+    if (user.isVerified)
+      throw new CustomError("Your account is verificated you can't pass it again.", 409);
 
     await User.update(
       {
@@ -117,7 +119,7 @@ async function verify(token: string) {
       }
     );
   } catch (e) {
-    throw new Error(e);
+    throw e;
   }
 }
 
@@ -129,10 +131,10 @@ async function requestToChangePassword(email: string) {
       }
     });
 
-    if (!user) throw new Error('Incorrect email there is no user with this email.');
+    if (!user) throw new CustomError('Incorrect email there is no user with this email.', 401);
 
     if (!user.dataValues.isVerified)
-      throw new Error("Unverified users can't reset password please pass verification.");
+      throw new CustomError("Unverified users can't reset password please pass verification.", 403);
 
     const code = crypto.randomBytes(16).toString('hex');
     const hashedCode = await bcrypt.hash(code, 9);
@@ -162,12 +164,12 @@ async function changePassword(id: number, password: string, code: any) {
   try {
     const user = await User.findByPk(id);
 
-    if (!user) throw new Error('Access denied.');
+    if (!user) throw new CustomError('Access denied.', 403);
 
     if (!(await bcrypt.compare(code, user.dataValues.resetPasswordCode)))
-      throw new Error('Reset password failed');
+      throw new CustomError('Reset password failed', 400);
 
-    if (!password) throw new Error('Password is empty please fill it');
+    if (!password) throw new CustomError('Password is empty please fill it', 400);
 
     const hashedPassword = await bcrypt.hash(password, 7);
 
@@ -185,7 +187,7 @@ async function changePassword(id: number, password: string, code: any) {
 
     return 'Password changed successfully.';
   } catch (e) {
-    throw new Error(e);
+    throw e;
   }
 }
 
