@@ -24,4 +24,5 @@ router
   .route('/change-password')
   .post(checkUser, validate(changePasswordValidator), userController.changePassword);
 
+router.route('/auth').get(checkUser, userController.auth);
 export default router;

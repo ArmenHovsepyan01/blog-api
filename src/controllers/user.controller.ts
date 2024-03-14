@@ -77,10 +77,26 @@ async function changePassword(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function auth(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { userId } = req.body;
+    const user = await userServices.getUser(userId);
+    console.log(true, 'user');
+
+    res.status(200).json({
+      message: 'User info',
+      data: user
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
 export const userController = {
   login,
   register,
   verify,
   requestToChangePassword,
-  changePassword
+  changePassword,
+  auth
 };

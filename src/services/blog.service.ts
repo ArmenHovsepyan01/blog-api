@@ -1,10 +1,19 @@
 import { BlogAttributes } from '../database/models/blog';
-import { Blog } from '../database/models/models';
+import { Blog, User } from '../database/models/models';
 import { CustomError } from '../errors/customError';
 
 async function getBlog(id: number) {
   try {
-    const blog = await Blog.findByPk(id);
+    const blog = await Blog.findOne({
+      where: {
+        id
+      },
+      include: {
+        model: User,
+        attributes: ['firstName', 'lastName'],
+        as: 'user'
+      }
+    });
 
     if (!blog) return {};
 
@@ -17,8 +26,10 @@ async function getBlog(id: number) {
 async function getAllBlogs() {
   try {
     return Blog.findAll({
-      where: {
-        isPublished: true
+      include: {
+        model: User,
+        attributes: ['firstName', 'lastName'],
+        as: 'user'
       }
     });
   } catch (e) {

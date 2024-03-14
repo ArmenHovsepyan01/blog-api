@@ -191,12 +191,27 @@ async function changePassword(id: number, password: string, code: any) {
   }
 }
 
+async function getUser(id: number) {
+  try {
+    const user = await User.findByPk(id, {
+      attributes: ['firstName', 'lastName', 'id', 'email']
+    });
+
+    if (!user) throw new CustomError("User doesn't exist.", 401);
+
+    return user;
+  } catch (e) {
+    throw e;
+  }
+}
+
 const userServices = {
   login,
   register,
   verify,
   changePassword,
-  requestToChangePassword
+  requestToChangePassword,
+  getUser
 };
 
 export default userServices;

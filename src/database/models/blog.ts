@@ -29,7 +29,8 @@ export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
     readonly updatedAt?: Date;
     static associate(models: typeof db) {
       this.belongsTo(models.User, {
-        foreignKey: 'userId'
+        foreignKey: 'userId',
+        as: 'user'
       });
       this.hasMany(models.LikedBlogs, {
         foreignKey: 'blogId'
