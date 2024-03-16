@@ -2,6 +2,8 @@ import { BlogAttributes } from '../database/models/blog';
 import { Blog, User } from '../database/models/models';
 import { CustomError } from '../errors/customError';
 
+import db from '../database/models';
+
 async function getBlog(id: number) {
   try {
     const blog = await Blog.findOne({
@@ -23,15 +25,43 @@ async function getBlog(id: number) {
   }
 }
 
-async function getAllBlogs() {
+async function getAllBlogs(page: number, limit: number) {
   try {
-    return Blog.findAll({
-      include: {
-        model: User,
-        attributes: ['firstName', 'lastName'],
-        as: 'user'
-      }
-    });
+    const offset = (page - 1) * limit;
+    const t = await db.sequelize.transaction();
+
+    const count = await Blog.count();
+
+    let blogs;
+
+    if (!page) {
+      blogs = await Blog.findAll({
+        include: {
+          model: User,
+          attributes: ['firstName', 'lastName'],
+          as: 'user'
+        },
+        transaction: t
+      });
+    } else {
+      blogs = await Blog.findAll({
+        include: {
+          model: User,
+          attributes: ['firstName', 'lastName'],
+          as: 'user'
+        },
+        limit,
+        offset,
+        transaction: t
+      });
+    }
+
+    await t.commit();
+
+    return {
+      blogs,
+      count
+    };
   } catch (e) {
     throw e;
   }

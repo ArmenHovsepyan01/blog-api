@@ -26,10 +26,12 @@ export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
     readonly updatedAt?: Date;
     static associate(models: typeof db) {
       this.belongsTo(models.Blog, {
-        foreignKey: 'blogId'
+        foreignKey: 'blogId',
+        as: 'blog'
       });
       this.belongsTo(models.User, {
-        foreignKey: 'userId'
+        foreignKey: 'userId',
+        as: 'user'
       });
     }
   }

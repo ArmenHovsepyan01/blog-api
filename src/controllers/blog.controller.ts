@@ -6,10 +6,13 @@ import blogServices from '../services/blog.service';
 
 async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
-    const blogs = await blogServices.getAllBlogs();
+    const { page, limit } = req.query;
+
+    const { blogs, count } = await blogServices.getAllBlogs(+page, +limit);
 
     res.status(200).json({
-      blogs
+      blogs,
+      count
     });
   } catch (e) {
     next(e);

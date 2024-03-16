@@ -81,7 +81,6 @@ async function auth(req: Request, res: Response, next: NextFunction) {
   try {
     const { userId } = req.body;
     const user = await userServices.getUser(userId);
-    console.log(true, 'user');
 
     res.status(200).json({
       message: 'User info',
