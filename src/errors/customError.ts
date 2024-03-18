@@ -21,5 +21,9 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
   }
 
   console.error(JSON.stringify(err, null, 2));
-  return res.status(500).send({ error: err });
+  return res.status(500).send({
+    error: {
+      message: err.message
+    }
+  });
 };

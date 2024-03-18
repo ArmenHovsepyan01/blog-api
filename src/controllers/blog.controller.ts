@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { BlogAttributes } from '../database/models/blog';
 
 import blogServices from '../services/blog.service';
+import user from '../database/models/user';
 
 async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
@@ -65,7 +66,7 @@ async function update(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
     const updatedBlogValues = req.body as BlogAttributes;
-    console.log(updatedBlogValues);
+    console.log(updatedBlogValues, 'values');
 
     const updatedBlog = await blogServices.updateBlog(+id, updatedBlogValues);
 
@@ -78,10 +79,25 @@ async function update(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function getUserBlogs(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { userId } = req.body;
+    const data = await blogServices.getUserBlogs(userId);
+
+    res.status(200).json({
+      message: 'User blogs retrieved successfully.',
+      data
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
 export const blogController = {
   get,
   getAll,
   create,
   update,
-  deleteBlog
+  deleteBlog,
+  getUserBlogs
 };

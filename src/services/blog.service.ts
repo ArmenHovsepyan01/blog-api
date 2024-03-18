@@ -27,10 +27,17 @@ async function getBlog(id: number) {
 
 async function getAllBlogs(page: number, limit: number) {
   try {
+    const condition = {
+      isPublished: true
+    };
+
     const offset = (page - 1) * limit;
     const t = await db.sequelize.transaction();
 
-    const count = await Blog.count();
+    const count = await Blog.count({
+      where: condition,
+      transaction: t
+    });
 
     let blogs;
 
@@ -41,6 +48,7 @@ async function getAllBlogs(page: number, limit: number) {
           attributes: ['firstName', 'lastName'],
           as: 'user'
         },
+        where: condition,
         transaction: t
       });
     } else {
@@ -50,6 +58,7 @@ async function getAllBlogs(page: number, limit: number) {
           attributes: ['firstName', 'lastName'],
           as: 'user'
         },
+        where: condition,
         limit,
         offset,
         transaction: t
@@ -124,12 +133,25 @@ async function updateBlog(id: number, values: BlogAttributes) {
   }
 }
 
+async function getUserBlogs(userId: number) {
+  try {
+    return await Blog.findAll({
+      where: {
+        userId
+      }
+    });
+  } catch (e) {
+    throw e;
+  }
+}
+
 const blogServices = {
   getBlog,
   getAllBlogs,
   createBlog,
   updateBlog,
-  deleteBlog
+  deleteBlog,
+  getUserBlogs
 };
 
 export default blogServices;

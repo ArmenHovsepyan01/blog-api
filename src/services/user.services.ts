@@ -136,6 +136,12 @@ async function requestToChangePassword(email: string) {
     if (!user.dataValues.isVerified)
       throw new CustomError("Unverified users can't reset password please pass verification.", 403);
 
+    if (user.dataValues.resetPasswordCode)
+      throw new CustomError(
+        'Please check your email you have already asked for reset password.',
+        400
+      );
+
     const code = crypto.randomBytes(16).toString('hex');
     const hashedCode = await bcrypt.hash(code, 9);
 
@@ -156,7 +162,7 @@ async function requestToChangePassword(email: string) {
 
     return 'Email for changing password send successfully.';
   } catch (e) {
-    throw new Error(e);
+    throw e;
   }
 }
 
@@ -166,8 +172,16 @@ async function changePassword(id: number, password: string, code: any) {
 
     if (!user) throw new CustomError('Access denied.', 403);
 
-    if (!(await bcrypt.compare(code, user.dataValues.resetPasswordCode)))
+    if (!code) throw new CustomError('Code is missing please revisit email.', 401);
+    let isEqual = false;
+
+    try {
+      isEqual = await bcrypt.compare(code, user.dataValues.resetPasswordCode);
+    } catch (e) {
       throw new CustomError('Reset password failed', 400);
+    }
+
+    if (!isEqual) throw new CustomError('Reset password failed', 400);
 
     if (!password) throw new CustomError('Password is empty please fill it', 400);
 

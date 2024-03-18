@@ -27,7 +27,7 @@ const upload = multer({
 router
   .route('/blog/:id')
   .get(blogController.get)
-  .post(checkUser, blogController.update)
+  .post(upload.single('image'), checkUser, blogController.update)
   .delete(checkUser, blogController.deleteBlog);
 
 router
@@ -38,6 +38,9 @@ router
     validate(createBlogBodyValidator),
     blogController.create
   );
+
 router.route('/blogs').get(blogController.getAll);
+
+router.route('/user-blogs').get(checkUser, blogController.getUserBlogs);
 
 export default router;
