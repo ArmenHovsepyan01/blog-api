@@ -1,9 +1,7 @@
 import { Blog, LikedBlogs, User } from '../database/models/models';
 import { CustomError } from '../errors/customError';
-import { addAbortSignal } from 'node:stream';
+
 import db from '../database/models';
-import * as trace_events from 'trace_events';
-import user from '../database/models/user';
 
 const includes = [
   {
@@ -36,7 +34,6 @@ async function getAll(userId: number) {
 }
 
 async function create(userId: number, blogId: number) {
-  console.log(userId, blogId);
   try {
     if (!userId) {
       throw new CustomError('Please log in then add blogs to your liked list', 401);
@@ -49,7 +46,7 @@ async function create(userId: number, blogId: number) {
       blogId
     };
 
-    const t = await db.sequelize.transaction();
+    const transaction = await db.sequelize.transaction();
 
     const likedBlog = await LikedBlogs.findOne({
       where: values
@@ -59,17 +56,17 @@ async function create(userId: number, blogId: number) {
 
     await LikedBlogs.create(values, {
       include: includes,
-      transaction: t
+      transaction
     });
 
     const newLikedBlog = await LikedBlogs.findOne({
       where: values,
       include: includes,
       attributes,
-      transaction: t
+      transaction
     });
 
-    await t.commit();
+    await transaction.commit();
     return newLikedBlog;
   } catch (e) {
     throw e;

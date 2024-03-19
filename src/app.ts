@@ -10,6 +10,7 @@ import { connectToDB } from './database/config/database';
 import bodyParser from 'body-parser';
 
 import { errorHandler } from './errors/customError';
+
 import 'express-async-errors';
 
 const app = express();

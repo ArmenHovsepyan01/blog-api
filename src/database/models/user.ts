@@ -36,9 +36,20 @@ export default (sequelize: any, DataTypes: typeof Sequelize.DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       });
+
       this.hasMany(models.LikedBlogs, {
         foreignKey: 'userId',
         as: 'likedBlogs'
+      });
+
+      this.hasMany(models.Followers, {
+        as: 'userFollowed',
+        foreignKey: 'followerId'
+      });
+
+      this.hasMany(models.Followers, {
+        as: 'userFollowers',
+        foreignKey: 'followingId'
       });
     }
   }

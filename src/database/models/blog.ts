@@ -1,6 +1,9 @@
 'use strict';
+
 import Sequelize, { InstanceDestroyOptions, Model, Optional } from 'sequelize';
+
 import db from './index';
+
 import deleteImage from '../../utilis/deleteImage';
 
 export interface BlogAttributes {
