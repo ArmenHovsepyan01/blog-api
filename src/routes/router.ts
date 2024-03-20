@@ -3,13 +3,15 @@ import { Router } from 'express';
 import userRouter from './user.router';
 import blogRouter from './blog.router';
 import likedBlogsRoute from './likedBlogs.route';
-import followersController from '../controllers/followers.controller';
+import followRouter from './follow.router';
+
+import { checkUser } from '../middleware/checkUser';
 
 const router = Router();
 
 router.use('/', userRouter);
 router.use('/', blogRouter);
-router.use('/liked-blogs', likedBlogsRoute);
+router.use('/liked-blogs', checkUser, likedBlogsRoute);
+router.use('/', followRouter);
 
-router.route('/followers').get(followersController.get);
 export default router;

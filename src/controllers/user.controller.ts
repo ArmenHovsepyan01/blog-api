@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import userServices from '../services/user.services';
 
-import { UserAttributes } from '../database/models/user';
+import user, { UserAttributes } from '../database/models/user';
 
 import { LoginValues } from '../definitions';
 
@@ -91,11 +91,26 @@ async function auth(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function getInfo(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    const userInfo = await userServices.getUserInfo(+id);
+
+    res.status(200).json({
+      data: userInfo
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
 export const userController = {
   login,
   register,
   verify,
   requestToChangePassword,
   changePassword,
-  auth
+  auth,
+  getInfo
 };

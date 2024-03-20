@@ -1,42 +1,55 @@
-import { Followers, User } from '../database/models/models';
+import { FollowerValues } from '../definitions';
+import { CustomError } from '../errors/customError';
 
-async function getFollowers(id: number) {
+import { Followers } from '../database/models/models';
+
+async function createFollower(values: FollowerValues) {
   try {
-    const data = await User.findAll({
-      include: [
-        {
-          model: Followers,
-          as: 'userFollowed',
-          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
-          include: [
-            {
-              attributes: ['id', 'firstName', 'lastName'],
-              model: User,
-              as: 'followingUser'
-            }
-          ]
-        },
-        {
-          model: Followers,
-          as: 'userFollowers',
-          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
-          include: [
-            {
-              attributes: ['id', 'firstName'],
-              model: User,
-              as: 'followerUser'
-            }
-          ]
-        }
-      ]
+    if (!values.followingId) throw new CustomError('Please include whom you want to follow.', 400);
+
+    if (values.userId === values.followingId)
+      throw new CustomError("You can't follow yourself.", 400);
+
+    const existingFollower = await Followers.findOne({
+      where: {
+        followingId: values.followingId,
+        followerId: values.userId
+      }
     });
 
-    return data;
+    if (existingFollower) {
+      return await deleteFollow(values.userId, values.followingId);
+    }
+
+    const data = await Followers.create({
+      ...values,
+      followerId: values.userId
+    });
+    console.log(data);
+    return 'Your follow successfully has been applied.';
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function deleteFollow(followerId: number, followingId: number) {
+  try {
+    if (followerId === followingId) throw new CustomError("You can't unfollow yourself.", 400);
+
+    const data = await Followers.destroy({
+      where: {
+        followerId,
+        followingId
+      }
+    });
+
+    console.log(data);
+    return 'Your unfollow request successfully has been applied.';
   } catch (e) {
     throw e;
   }
 }
 
 export default {
-  getFollowers
+  createFollower
 };

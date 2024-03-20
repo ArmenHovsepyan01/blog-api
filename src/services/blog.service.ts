@@ -33,6 +33,7 @@ async function getAllBlogs(page: number, limit: number) {
     };
 
     const offset = (page - 1) * limit;
+
     const transaction = await db.sequelize.transaction();
 
     const count = await Blog.count({
@@ -48,7 +49,8 @@ async function getAllBlogs(page: number, limit: number) {
       },
       where: condition,
       transaction: transaction,
-      ...(page && limit ? { limit, offset } : {})
+      ...(page && limit ? { limit, offset } : {}),
+      order: [['id', 'DESC']]
     });
 
     await transaction.commit();

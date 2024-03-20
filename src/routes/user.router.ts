@@ -25,4 +25,7 @@ router
   .post(checkUser, validate(changePasswordValidator), userController.changePassword);
 
 router.route('/auth').get(checkUser, userController.auth);
+
+router.route('/user/:id').get(userController.getInfo);
+
 export default router;

@@ -26,6 +26,9 @@ app.use(router);
 app.use(errorHandler);
 
 app.use('/api/images', express.static(imagesPath));
+app.use('/file', express.static('C:\\Users\\user\\Desktop\\projects\\server\\.eslintrc.json'));
+
+console.log(imagesPath);
 
 const start = async () => {
   try {

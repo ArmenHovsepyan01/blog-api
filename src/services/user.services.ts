@@ -1,6 +1,6 @@
 import { UserAttributes } from '../database/models/user';
 
-import { User } from '../database/models/models';
+import { Followers, User, Blog } from '../database/models/models';
 
 import bcrypt from 'bcrypt';
 
@@ -12,6 +12,7 @@ import jwt from 'jsonwebtoken';
 
 import crypto from 'node:crypto';
 import { CustomError } from '../errors/customError';
+import { customizeUserInfo } from '../utilis/customizeUserInfo';
 
 async function login(values: LoginValues) {
   try {
@@ -208,12 +209,87 @@ async function changePassword(id: number, password: string, code: any) {
 async function getUser(id: number) {
   try {
     const user = await User.findByPk(id, {
-      attributes: ['firstName', 'lastName', 'id', 'email']
+      attributes: ['firstName', 'lastName', 'id', 'email'],
+      include: [
+        {
+          model: Followers,
+          as: 'userFollowed',
+          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
+          include: [
+            {
+              attributes: ['id', 'firstName', 'lastName'],
+              model: User,
+              as: 'followingUser'
+            }
+          ]
+        },
+        {
+          model: Followers,
+          as: 'userFollowers',
+          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followingId'] },
+          include: [
+            {
+              attributes: ['id', 'firstName', 'lastName'],
+              model: User,
+              as: 'followerUser'
+            }
+          ]
+        }
+      ]
     });
 
     if (!user) throw new CustomError("User doesn't exist.", 401);
 
-    return user;
+    return customizeUserInfo(user.dataValues);
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function getUserInfo(id: number) {
+  try {
+    const user = await User.findByPk(id, {
+      attributes: ['firstName', 'lastName', 'id', 'email'],
+      include: [
+        {
+          model: Followers,
+          as: 'userFollowed',
+          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
+          include: [
+            {
+              attributes: ['id', 'firstName', 'lastName'],
+              model: User,
+              as: 'followingUser'
+            }
+          ]
+        },
+        {
+          model: Followers,
+          as: 'userFollowers',
+          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followingId'] },
+          include: [
+            {
+              attributes: ['id', 'firstName', 'lastName'],
+              model: User,
+              as: 'followerUser'
+            }
+          ]
+        },
+        {
+          model: Blog,
+          as: 'blogs',
+          where: {
+            isPublished: true
+          },
+          attributes: { exclude: ['updatedAt'] },
+          required: false
+        }
+      ]
+    });
+
+    if (!user) throw new CustomError("User doesn't exist.", 401);
+
+    return customizeUserInfo(user.dataValues);
   } catch (e) {
     throw e;
   }
@@ -225,7 +301,8 @@ const userServices = {
   verify,
   changePassword,
   requestToChangePassword,
-  getUser
+  getUser,
+  getUserInfo
 };
 
 export default userServices;

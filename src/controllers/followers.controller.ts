@@ -1,13 +1,13 @@
 import { NextFunction, Response, Request } from 'express';
 import followersService from '../services/followers.service';
 
-async function get(req: Request, res: Response, next: NextFunction) {
+async function create(req: Request, res: Response, next: NextFunction) {
   try {
-    // const {} = req.body;
-    const followers = await followersService.getFollowers(2);
+    const message = await followersService.createFollower(req.body);
+    console.log(message);
 
     res.status(200).json({
-      followers
+      message
     });
   } catch (e) {
     next(e);
@@ -15,5 +15,5 @@ async function get(req: Request, res: Response, next: NextFunction) {
 }
 
 export default {
-  get
+  create
 };
