@@ -14,12 +14,40 @@ import crypto from 'node:crypto';
 import { CustomError } from '../errors/customError';
 import { customizeUserInfo } from '../utilis/customizeUserInfo';
 
+const includeFollowers = [
+  {
+    model: Followers,
+    as: 'userFollowed',
+    attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
+    include: [
+      {
+        attributes: ['id', 'firstName', 'lastName'],
+        model: User,
+        as: 'followingUser'
+      }
+    ]
+  },
+  {
+    model: Followers,
+    as: 'userFollowers',
+    attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followingId'] },
+    include: [
+      {
+        attributes: ['id', 'firstName', 'lastName'],
+        model: User,
+        as: 'followerUser'
+      }
+    ]
+  }
+];
+
 async function login(values: LoginValues) {
   try {
     const user = await User.findOne({
       where: {
         email: values.email
-      }
+      },
+      include: [...includeFollowers]
     });
 
     if (!user) {
@@ -44,12 +72,7 @@ async function login(values: LoginValues) {
     );
 
     return {
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email
-      },
+      user: customizeUserInfo(user.dataValues, true),
       access_token
     };
   } catch (e: any) {
@@ -210,32 +233,7 @@ async function getUser(id: number) {
   try {
     const user = await User.findByPk(id, {
       attributes: ['firstName', 'lastName', 'id', 'email'],
-      include: [
-        {
-          model: Followers,
-          as: 'userFollowed',
-          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
-          include: [
-            {
-              attributes: ['id', 'firstName', 'lastName'],
-              model: User,
-              as: 'followingUser'
-            }
-          ]
-        },
-        {
-          model: Followers,
-          as: 'userFollowers',
-          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followingId'] },
-          include: [
-            {
-              attributes: ['id', 'firstName', 'lastName'],
-              model: User,
-              as: 'followerUser'
-            }
-          ]
-        }
-      ]
+      include: includeFollowers
     });
 
     if (!user) throw new CustomError("User doesn't exist.", 401);
@@ -251,30 +249,7 @@ async function getUserInfo(id: number) {
     const user = await User.findByPk(id, {
       attributes: ['firstName', 'lastName', 'id', 'email'],
       include: [
-        {
-          model: Followers,
-          as: 'userFollowed',
-          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
-          include: [
-            {
-              attributes: ['id', 'firstName', 'lastName'],
-              model: User,
-              as: 'followingUser'
-            }
-          ]
-        },
-        {
-          model: Followers,
-          as: 'userFollowers',
-          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followingId'] },
-          include: [
-            {
-              attributes: ['id', 'firstName', 'lastName'],
-              model: User,
-              as: 'followerUser'
-            }
-          ]
-        },
+        ...includeFollowers,
         {
           model: Blog,
           as: 'blogs',

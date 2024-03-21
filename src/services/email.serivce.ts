@@ -1,6 +1,9 @@
 import nodemailer from 'nodemailer';
 
 import jwt from 'jsonwebtoken';
+import path from 'path';
+
+import { renderHtml } from '../utilis/renderHtml';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -26,14 +29,13 @@ export const sendVerificationCode = async (email: string, user_id: number, user_
       }
     );
 
-    const html = `<div xmlns="http://www.w3.org/1999/html">
-    <h3>Hey ${user_name}!</h3>
-    <p>Please press this button to verify your account <a href="http://localhost:${process.env.PORT}/verify?token=${token}" style="text-decoration: none;color: black">
-    <br>
-    <button>Verify Account</button>
-</a> 
-</p>
-</div>`;
+    const data = {
+      user_name,
+      token,
+      port: process.env.PORT || 5000
+    };
+
+    const html = await renderHtml('verification.hbs', data);
 
     const mailOptions = {
       from: process.env.MAIL,
@@ -49,16 +51,14 @@ export const sendVerificationCode = async (email: string, user_id: number, user_
   }
 };
 
-export const sendPasswordResetMail = async (email: string, userName: string, link: string) => {
+export const sendPasswordResetMail = async (email: string, user_name: string, link: string) => {
   try {
-    const html = `<div>
-      <h3>Hi ${userName}!</h3>
-      <span>You requested to reset your password.</span> 
-      </br>
-      <span>Please click the link below to reset password</span>
-      </br>
-     <a href=${link}>Reset password</a>
-    </div>`;
+    const data = {
+      user_name,
+      link
+    };
+
+    const html = await renderHtml('resetPassword.hbs', data);
 
     const mailOptions = {
       from: process.env.MAIL,

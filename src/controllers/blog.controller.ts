@@ -3,7 +3,6 @@ import { NextFunction, Request, Response } from 'express';
 import { BlogAttributes } from '../database/models/blog';
 
 import blogServices from '../services/blog.service';
-import user from '../database/models/user';
 
 async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
@@ -54,7 +53,7 @@ async function get(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const blog = await blogServices.getBlog(+id);
 
-    res.status(200).json({
+    return res.json({
       blog
     });
   } catch (e) {

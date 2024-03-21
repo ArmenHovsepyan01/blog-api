@@ -3,7 +3,11 @@ import { CustomError } from '../errors/customError';
 
 import { Blog, User } from '../database/models/models';
 
-import db from '../database/models';
+const includeUser = {
+  model: User,
+  attributes: ['firstName', 'lastName'],
+  as: 'user'
+};
 
 async function getBlog(id: number) {
   try {
@@ -11,11 +15,7 @@ async function getBlog(id: number) {
       where: {
         id
       },
-      include: {
-        model: User,
-        attributes: ['firstName', 'lastName'],
-        as: 'user'
-      }
+      include: includeUser
     });
 
     if (!blog) return {};
@@ -34,29 +34,15 @@ async function getAllBlogs(page: number, limit: number) {
 
     const offset = (page - 1) * limit;
 
-    const transaction = await db.sequelize.transaction();
-
-    const count = await Blog.count({
+    const { count, rows } = await Blog.findAndCountAll({
+      include: includeUser,
       where: condition,
-      transaction
-    });
-
-    const blogs = await Blog.findAll({
-      include: {
-        model: User,
-        attributes: ['firstName', 'lastName'],
-        as: 'user'
-      },
-      where: condition,
-      transaction: transaction,
       ...(page && limit ? { limit, offset } : {}),
       order: [['id', 'DESC']]
     });
 
-    await transaction.commit();
-
     return {
-      blogs,
+      blogs: rows,
       count
     };
   } catch (e) {
@@ -66,11 +52,7 @@ async function getAllBlogs(page: number, limit: number) {
 
 async function createBlog(values: BlogAttributes) {
   try {
-    const newBlog = await Blog.create(values);
-
-    console.log(newBlog);
-
-    return newBlog;
+    return await Blog.create(values);
   } catch (e) {
     throw e;
   }
@@ -126,7 +108,8 @@ async function getUserBlogs(userId: number) {
     return await Blog.findAll({
       where: {
         userId
-      }
+      },
+      include: includeUser
     });
   } catch (e) {
     throw e;

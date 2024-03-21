@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify registration</title>
+</head>
+<body>
+    <div xmlns="http://www.w3.org/1999/html">
+        <h3>Hey {{user_name}}!</h3>
+        <p>Please press this button to verify your account
+            <a href="http://localhost:{{port}}/verify?token={{token}}" style="text-decoration: none;color: black">
+            <br>
+            <button>Verify Account</button>
+        </a>
+        </p>
+    </div>
+</body>
+</html>

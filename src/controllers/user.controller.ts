@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import userServices from '../services/user.services';
 
-import user, { UserAttributes } from '../database/models/user';
+import { UserAttributes } from '../database/models/user';
 
 import { LoginValues } from '../definitions';
 
