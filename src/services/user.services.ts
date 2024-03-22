@@ -72,7 +72,10 @@ async function login(values: LoginValues) {
     );
 
     return {
-      user: customizeUserInfo(user.dataValues, true),
+      user: {
+        ...customizeUserInfo(user.dataValues, true),
+        access_token
+      },
       access_token
     };
   } catch (e: any) {
@@ -270,6 +273,62 @@ async function getUserInfo(id: number) {
   }
 }
 
+async function getUserFollowers(id: number) {
+  try {
+    const user = await User.findByPk(id, {
+      attributes: [],
+      include: [
+        {
+          model: Followers,
+          as: 'userFollowers',
+          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followingId'] },
+          include: [
+            {
+              attributes: ['id', 'firstName', 'lastName'],
+              model: User,
+              as: 'followerUser'
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!user) throw new CustomError("User doesn't exist.", 401);
+
+    return customizeUserInfo(user, true).userFollowers;
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function getUserFollowings(id: number) {
+  try {
+    const user = await User.findByPk(id, {
+      attributes: [],
+      include: [
+        {
+          model: Followers,
+          as: 'userFollowed',
+          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
+          include: [
+            {
+              attributes: ['id', 'firstName', 'lastName'],
+              model: User,
+              as: 'followingUser'
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!user) throw new CustomError("User doesn't exist.", 401);
+
+    return customizeUserInfo(user, true).userFollowed;
+  } catch (e) {
+    throw e;
+  }
+}
+
 const userServices = {
   login,
   register,
@@ -277,7 +336,9 @@ const userServices = {
   changePassword,
   requestToChangePassword,
   getUser,
-  getUserInfo
+  getUserInfo,
+  getUserFollowers,
+  getUserFollowings
 };
 
 export default userServices;

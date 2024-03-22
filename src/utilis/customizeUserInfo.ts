@@ -1,11 +1,15 @@
 export function customizeUserInfo(data: any, filter = false) {
-  data.userFollowed = data.userFollowed.map((item) => {
-    return item.followingUser;
-  });
+  if (data.userFollowed) {
+    data.userFollowed = data.userFollowed.map((item) => {
+      return item.followingUser;
+    });
+  }
 
-  data.userFollowers = data.userFollowers.map((item) => {
-    return item.followerUser;
-  });
+  if (data.userFollowers) {
+    data.userFollowers = data.userFollowers.map((item) => {
+      return item.followerUser;
+    });
+  }
 
   if (filter) {
     return {

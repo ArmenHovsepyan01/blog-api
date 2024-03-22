@@ -28,4 +28,7 @@ router.route('/auth').get(checkUser, userController.auth);
 
 router.route('/user/:id').get(userController.getInfo);
 
+router.route('/followers/:id').get(userController.getFollowers);
+router.route('/followings/:id').get(userController.getFollowings);
+
 export default router;

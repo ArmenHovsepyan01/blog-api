@@ -5,6 +5,7 @@ import userServices from '../services/user.services';
 import { UserAttributes } from '../database/models/user';
 
 import { LoginValues } from '../definitions';
+import { userInfo } from 'node:os';
 
 async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -105,6 +106,34 @@ async function getInfo(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function getFollowers(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    const userInfo = await userServices.getUserFollowers(+id);
+
+    res.status(200).json({
+      data: userInfo
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
+async function getFollowings(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    const userInfo = await userServices.getUserFollowings(+id);
+
+    res.status(200).json({
+      data: userInfo
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
 export const userController = {
   login,
   register,
@@ -112,5 +141,7 @@ export const userController = {
   requestToChangePassword,
   changePassword,
   auth,
-  getInfo
+  getInfo,
+  getFollowers,
+  getFollowings
 };
