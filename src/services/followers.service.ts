@@ -25,6 +25,7 @@ async function createFollower(values: FollowerValues) {
       ...values,
       followerId: values.userId
     });
+
     console.log(data);
     return 'Your follow successfully has been applied.';
   } catch (e) {
