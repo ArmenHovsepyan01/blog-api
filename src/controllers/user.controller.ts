@@ -6,6 +6,7 @@ import { UserAttributes } from '../database/models/user';
 
 import { LoginValues } from '../definitions';
 import { userInfo } from 'node:os';
+import path from 'path';
 
 async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -123,8 +124,10 @@ async function getFollowers(req: Request, res: Response, next: NextFunction) {
 async function getFollowings(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
+    const { page, limit } = req.query;
+    console.log(page, limit);
 
-    const userInfo = await userServices.getUserFollowings(+id);
+    const userInfo = await userServices.getUserFollowings(+id, +page, +limit);
 
     res.status(200).json({
       data: userInfo

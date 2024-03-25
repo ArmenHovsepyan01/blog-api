@@ -13,6 +13,8 @@ import jwt from 'jsonwebtoken';
 import crypto from 'node:crypto';
 import { CustomError } from '../errors/customError';
 import { customizeUserInfo } from '../utilis/customizeUserInfo';
+import { where } from 'sequelize';
+import { sort } from '../utilis/sort';
 
 const includeFollowers = [
   {
@@ -301,8 +303,11 @@ async function getUserFollowers(id: number) {
   }
 }
 
-async function getUserFollowings(id: number) {
+async function getUserFollowings(id: number, page: number, limit: number) {
   try {
+    const offset = (page - 1) * limit;
+    console.log(offset, page, limit);
+
     const user = await User.findByPk(id, {
       attributes: [],
       include: [
@@ -323,7 +328,13 @@ async function getUserFollowings(id: number) {
 
     if (!user) throw new CustomError("User doesn't exist.", 401);
 
-    return customizeUserInfo(user, true).userFollowed;
+    const followings = sort(customizeUserInfo(user, true).userFollowed);
+
+    if (page && limit) {
+      return followings.slice(offset, limit + offset);
+    }
+
+    return followings;
   } catch (e) {
     throw e;
   }
