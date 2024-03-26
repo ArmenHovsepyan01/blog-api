@@ -1,5 +1,8 @@
 import express from 'express';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import path from 'path';
 
 import cors from 'cors';
@@ -9,7 +12,7 @@ import router from './routes/router';
 import { connectToDB } from './database/config/database';
 import bodyParser from 'body-parser';
 
-import { errorHandler } from './errors/customError';
+import { errorHandler } from './middleware/errorHandler';
 
 import 'express-async-errors';
 

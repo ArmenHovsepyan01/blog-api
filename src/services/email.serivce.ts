@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
 
 import jwt from 'jsonwebtoken';
-import path from 'path';
 
 import { renderHtml } from '../utilis/renderHtml';
 

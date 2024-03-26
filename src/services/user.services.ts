@@ -11,10 +11,12 @@ import { LoginValues } from '../definitions';
 import jwt from 'jsonwebtoken';
 
 import crypto from 'node:crypto';
+
 import { CustomError } from '../errors/customError';
+
 import { customizeUserInfo } from '../utilis/customizeUserInfo';
-import { where } from 'sequelize';
 import { sort } from '../utilis/sort';
+import { Data, getFollowersBlogs } from '../utilis/getFollowersBlogs';
 
 const includeFollowers = [
   {
@@ -48,8 +50,7 @@ async function login(values: LoginValues) {
     const user = await User.findOne({
       where: {
         email: values.email
-      },
-      include: [...includeFollowers]
+      }
     });
 
     if (!user) {
@@ -237,8 +238,7 @@ async function changePassword(id: number, password: string, code: any) {
 async function getUser(id: number) {
   try {
     const user = await User.findByPk(id, {
-      attributes: ['firstName', 'lastName', 'id', 'email'],
-      include: includeFollowers
+      attributes: ['firstName', 'lastName', 'id', 'email']
     });
 
     if (!user) throw new CustomError("User doesn't exist.", 401);
@@ -275,8 +275,10 @@ async function getUserInfo(id: number) {
   }
 }
 
-async function getUserFollowers(id: number) {
+async function getUserFollowers(id: number, page: number, limit: number) {
   try {
+    const offset = (page - 1) * limit;
+
     const user = await User.findByPk(id, {
       attributes: [],
       include: [
@@ -297,7 +299,13 @@ async function getUserFollowers(id: number) {
 
     if (!user) throw new CustomError("User doesn't exist.", 401);
 
-    return customizeUserInfo(user, true).userFollowers;
+    const followers = sort(customizeUserInfo(user, true).userFollowers);
+
+    if (page && limit) {
+      return followers.slice(offset, limit + offset);
+    }
+
+    return followers;
   } catch (e) {
     throw e;
   }
@@ -306,7 +314,6 @@ async function getUserFollowers(id: number) {
 async function getUserFollowings(id: number, page: number, limit: number) {
   try {
     const offset = (page - 1) * limit;
-    console.log(offset, page, limit);
 
     const user = await User.findByPk(id, {
       attributes: [],
@@ -339,6 +346,57 @@ async function getUserFollowings(id: number, page: number, limit: number) {
     throw e;
   }
 }
+async function getUserFollowingsBlogs(id: number, page: number, limit: number) {
+  try {
+    const offset = (page - 1) * limit;
+
+    const user = await User.findByPk(id, {
+      attributes: [],
+      include: [
+        {
+          model: Followers,
+          as: 'userFollowed',
+          attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'followerId'] },
+          include: [
+            {
+              attributes: ['id'],
+              model: User,
+              as: 'followingUser',
+              include: [
+                {
+                  model: Blog,
+                  as: 'blogs',
+                  include: [
+                    {
+                      attributes: ['firstName', 'lastName'],
+                      model: User,
+                      as: 'user'
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!user) throw new CustomError("User doesn't exist.", 401);
+
+    // @ts-ignore
+    const followingsBlogs = sort(
+      getFollowersBlogs(customizeUserInfo(user.dataValues, true).userFollowed)
+    );
+
+    if (page && limit) {
+      return followingsBlogs.slice(offset, limit + offset);
+    }
+
+    return followingsBlogs;
+  } catch (e) {
+    throw e;
+  }
+}
 
 const userServices = {
   login,
@@ -349,7 +407,8 @@ const userServices = {
   getUser,
   getUserInfo,
   getUserFollowers,
-  getUserFollowings
+  getUserFollowings,
+  getUserFollowingsBlogs
 };
 
 export default userServices;

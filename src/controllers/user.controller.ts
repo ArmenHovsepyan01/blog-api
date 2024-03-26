@@ -66,7 +66,10 @@ async function requestToChangePassword(req: Request, res: Response, next: NextFu
 
 async function changePassword(req: Request, res: Response, next: NextFunction) {
   try {
-    const { userId, password } = req.body;
+    // @ts-ignore
+    const { userId } = req;
+
+    const { password } = req.body;
     const { code } = req.query;
 
     const message = await userServices.changePassword(userId, password, code);
@@ -81,7 +84,8 @@ async function changePassword(req: Request, res: Response, next: NextFunction) {
 
 async function auth(req: Request, res: Response, next: NextFunction) {
   try {
-    const { userId } = req.body;
+    // @ts-ignore
+    const { userId } = req;
     const user = await userServices.getUser(userId);
 
     res.status(200).json({
@@ -110,8 +114,9 @@ async function getInfo(req: Request, res: Response, next: NextFunction) {
 async function getFollowers(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
+    const { page, limit } = req.query;
 
-    const userInfo = await userServices.getUserFollowers(+id);
+    const userInfo = await userServices.getUserFollowers(+id, +page, +limit);
 
     res.status(200).json({
       data: userInfo
@@ -137,6 +142,23 @@ async function getFollowings(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function getFollowingsBlogs(req: Request, res: Response, next: NextFunction) {
+  try {
+    // @ts-ignore
+    const { userId } = req;
+    const { page, limit } = req.query;
+    console.log(page, limit);
+
+    const userInfo = await userServices.getUserFollowingsBlogs(+userId, +page, +limit);
+
+    res.status(200).json({
+      data: userInfo
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
 export const userController = {
   login,
   register,
@@ -146,5 +168,6 @@ export const userController = {
   auth,
   getInfo,
   getFollowers,
-  getFollowings
+  getFollowings,
+  getFollowingsBlogs
 };

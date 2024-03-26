@@ -2,6 +2,7 @@ import { BlogAttributes } from '../database/models/blog';
 import { CustomError } from '../errors/customError';
 
 import { Blog, User } from '../database/models/models';
+import deleteImage from '../utilis/deleteImage';
 
 const includeUser = {
   model: User,

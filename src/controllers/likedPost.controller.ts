@@ -3,7 +3,8 @@ import likedBlogsService from '../services/likedBlogs.service';
 
 async function get(req: Request, res: Response, next: NextFunction) {
   try {
-    const { userId } = req.body;
+    // @ts-ignore
+    const { userId } = req;
 
     const likedBlogs = await likedBlogsService.getAll(userId);
 
@@ -18,7 +19,10 @@ async function get(req: Request, res: Response, next: NextFunction) {
 
 async function create(req: Request, res: Response, next: NextFunction) {
   try {
-    const { userId, blogId } = req.body;
+    // @ts-ignore
+    const { userId } = req;
+
+    const { blogId } = req.body;
 
     const newLikedBlog = await likedBlogsService.create(userId, blogId);
 
@@ -33,7 +37,9 @@ async function create(req: Request, res: Response, next: NextFunction) {
 
 async function deleteLikedBlog(req: Request, res: Response, next: NextFunction) {
   try {
-    const { userId } = req.body;
+    // @ts-ignore
+    const { userId } = req;
+
     const { id } = req.params;
 
     const message = await likedBlogsService.removeLikedBlog(userId, +id);

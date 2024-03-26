@@ -3,8 +3,10 @@ import followersService from '../services/followers.service';
 
 async function create(req: Request, res: Response, next: NextFunction) {
   try {
+    // @ts-ignore
+    req.body.userId = req.userId;
+
     const message = await followersService.createFollower(req.body);
-    console.log(message);
 
     res.status(200).json({
       message

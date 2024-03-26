@@ -9,8 +9,8 @@ import { loginBodyValidator } from '../validators/loginBodyValidator';
 import { changePasswordValidator } from '../validators/changePasswordValidator';
 import { resetPasswordValidator } from '../validators/resetPasswordValidator';
 
-import { checkUserPrivilegies } from '../middleware/checkUserPrivilegies';
 import { checkUser } from '../middleware/checkUser';
+import user from '../database/models/user';
 
 const router = Router();
 
@@ -27,6 +27,7 @@ router
 router.route('/auth').get(checkUser, userController.auth);
 
 router.route('/user/:id').get(userController.getInfo);
+router.route('/user-followings-blogs').get(checkUser, userController.getFollowingsBlogs);
 
 router.route('/followers/:id').get(userController.getFollowers);
 router.route('/followings/:id').get(userController.getFollowings);

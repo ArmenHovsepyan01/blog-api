@@ -15,7 +15,7 @@ export async function checkUser(req: Request, res: Response, next: NextFunction)
     const userInfo = jwt.verify(token, process.env.SECRETKEY);
 
     // @ts-ignore
-    req.body.userId = userInfo.user_id;
+    req.userId = userInfo.user_id;
 
     next();
   } catch (e) {
